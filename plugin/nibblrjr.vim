@@ -19,7 +19,16 @@ function! nibblrjr#List()
     put=s:help
     keepjumps normal! ggddG
     for command in nibblrjr#GetJSON(s:api . 'command/list')
-        put = command.name . repeat('-', 39 - len(command.name))
+        let l:line = command.name . repeat(' ', 44 - len(command.name))
+        if has_key(command, 'starred') && command.starred
+            let l:line .= '★'
+        else
+            let l:line .= ' '
+        endif
+        if has_key(command, 'locked') && command.locked
+            let l:line .= ' 🔒'
+        endif
+        put = l:line
     endfor
     keepjumps normal! gg
 
