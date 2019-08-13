@@ -1,24 +1,32 @@
+" ? / ~ commands
+" s - vsplit
+" support locking/starring
+" ~ / ? / "> not working
+" help
+" check hashweb
+" bump main version - say requirement
+
 if v:version < 801
     echoe 'nibblrjr editor requires vim 8.1'
     finish
 endif
 
-let s:help="nibblrjr command editor - o:open a:add D:delete l:lock s:star S:sudo
-         \\n-----------------------------------------------"
-let s:helpLines = 2
+let s:endpoint = get(g:, 'nibblrjrURL', 'http://nibblr.pw')
+let s:password = ''
 
-let s:endpoint = 'http://localhost:8888'
-let s:api = s:endpoint . '/api/'
+let s:help="nibblrjr command editor - " . s:endpoint ."
+         \\n  o:open a:add D:delete l:lock s:star S:sudo
+         \\n --------------------------------------------"
+let s:helpLines = 3
 
 function! nibblrjr#List()
-    let l:url = s:api . 'command/list'
-    let l:list = nibblrjr#GetJSON(l:url)
+    let l:list = s:GetJSON('command/list')
     if type(l:list) != v:t_list
-        echom 'nibblrjr: no listing returned from ' . l:url
+        echom 'nibblrjr: no listing returned from ' . s:endpoint
         return
     endif
 
-    enew
+    vnew
     put=s:help
     keepjumps normal! ggddG
 
@@ -46,12 +54,13 @@ function! nibblrjr#List()
     syntax match Type /★/
     syntax match Include /🔒/
     syntax match Operator /^\(\S*\)/
-    syntax match Comment /\%2l-/
+    syntax match Comment /\%3l-/
     syntax match String /\%1lnibblr/
     syntax match Constant /\%1ljr/
-    syntax match Type /\%1l\(\S\):/
+    syntax match Type /\%2l\(\S\):/
 
     noremap <buffer> <silent> o :call nibblrjr#Get()<cr>
+    noremap <buffer> <silent> S :call nibblrjr#Sudo()<cr>
     noremap <buffer> <silent> a :call NibblrAdd()<cr>
     noremap <buffer> <silent> D :call NibblrDelete()<cr>
 endfunction
@@ -70,42 +79,82 @@ function! nibblrjr#Get()
             keepjumps normal! ggdG
         endif
 
-        put = nibblrjr#GetJSON(s:api . 'command/get/' . nibblrjr#UrlEncode(l:name)).command
-        keepjumps normal! ggdd
-        let &modified = 0
-        setlocal filetype=javascript
-        setlocal buftype=acwrite
-        setlocal noswapfile
-        autocmd! BufWriteCmd <buffer> call NibblrSet()
+        let s:res = s:GetJSON('command/get/' . s:UrlEncode(l:name))
+
+        if has_key(s:res, 'error')
+            echo 'nibblrjr: ' . s:res.error
+        else
+            put = s:res.command
+            keepjumps normal! ggdd
+            let &modified = 0
+            setlocal filetype=javascript
+            setlocal buftype=acwrite
+            setlocal noswapfile
+            autocmd! BufWriteCmd <buffer> call nibblrjr#Set()
+        endif
     endif
 endfunction
 
-call nibblrjr#List()
-
-function! nibblrjr#GetJSON(url)
-    return json_decode(system('curl --silent ' . a:url))
+function! nibblrjr#Set()
+    let l:name = expand('%')
+    let l:buf = join(getline(1, '$'), "\n")
+    let l:obj = { 'command': l:buf }
+    let s:res = s:PostJSON('command/set/' . s:UrlEncode(l:name), l:obj)
+    if has_key(s:res, 'error')
+        echo 'nibblrjr: ' . s:res.error
+    else
+        let &modified = 0
+    endif
 endfunction
 
-function! nibblrjr#UrlEncode(string)
-    let result = ""
+function! nibblrjr#Sudo()
+    let l:password = inputsecret('password: ')
+    normal! :<ESC>
+    if len(l:password)
+        echo 'nibblrjr: password changed'
+        let s:password = l:password
+    else
+        echo 'nibblrjr: password not changed'
+    endif
+endfunction
 
-    let characters = split(a:string, '.\zs')
-    for character in characters
-        let ascii_code = char2nr(a:character)
-        if character == " "
-            let result = result . "+"
-        elseif (ascii_code >= 48 && ascii_code <= 57) || (ascii_code >= 65 && ascii_code <= 90) || (ascii_code >= 97 && ascii_code <= 122) || (a:character == "-" || a:character == "_" || a:character == "." || a:character == "~")
-            let result = result . character
+function! s:GetJSON(url)
+    let l:url = s:endpoint . '/api/' . a:url
+    return json_decode(system('curl --silent ' . l:url))
+endfunction
+
+function! s:PostJSON(url, obj)
+    if len(s:password)
+        let a:obj.password = s:password
+    endif
+    let l:url = s:endpoint . '/api/' . a:url
+    let l:exec = 'curl -H "Content-Type: application/json" -s -d @- ' . l:url
+    let json = system(l:exec, json_encode(a:obj))
+    return json_decode(json)
+endfunction
+
+function! s:UrlEncode(string)
+    let l:result = ""
+
+    let l:characters = split(a:string, '.\zs')
+    for l:character in l:characters
+        let l:ascii_code = char2nr(l:character)
+        if l:character == " "
+            let l:result = l:result . "+"
+        elseif (l:ascii_code >= 48 && l:ascii_code <= 57) || (l:ascii_code >= 65 && l:ascii_code <= 90) || (l:ascii_code >= 97 && l:ascii_code <= 122) || (l:character == "-" || l:character == "_" || l:character == "." || l:character == "~")
+            let l:result = l:result . l:character
         else
             let i = 0
-            while i < strlen(character)
-                let byte = strpart(character, i, 1)
+            while i < strlen(l:character)
+                let byte = strpart(l:character, i, 1)
                 let decimal = char2nr(byte)
-                let result = result . "%" . printf("%02x", decimal)
+                let l:result = l:result . "%" . printf("%02x", decimal)
                 let i += 1
             endwhile
         endif
     endfor
 
-    return result
+    return l:result
 endfunction
+
+call nibblrjr#List()
