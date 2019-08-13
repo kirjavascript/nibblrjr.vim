@@ -61,15 +61,13 @@ function! nibblrjr#List()
 
     noremap <buffer> <silent> o :call nibblrjr#Get()<cr>
     noremap <buffer> <silent> S :call nibblrjr#Sudo()<cr>
+    noremap <buffer> <silent> D :call nibblrjr#Delete()<cr>
     noremap <buffer> <silent> a :call NibblrAdd()<cr>
-    noremap <buffer> <silent> D :call NibblrDelete()<cr>
 endfunction
 
 function! nibblrjr#Get()
     if line('.') > s:helpLines
-        let l:name = getline('.')
-        " strip everything after the first space
-        let l:name = substitute(l:name, " .*", "", "")
+        let l:name = s:GetCommandName()
 
         if bufwinnr(l:name) > 0
             enew
@@ -107,6 +105,21 @@ function! nibblrjr#Set()
     endif
 endfunction
 
+function! nibblrjr#Delete()
+    let l:name = s:GetCommandName()
+    if line('.') > s:helpLines && confirm('are you sure you want to delete ' . l:name, "&Ok\n&Cancel") == 1
+
+        let s:res = s:PostJSON('command/delete/' . s:UrlEncode(l:name), {})
+        if has_key(s:res, 'error')
+            echo 'nibblrjr: ' . s:res.error
+        else
+            setlocal modifiable
+            normal! dd
+            setlocal nomodifiable
+        endif
+    endif
+endfunction
+
 function! nibblrjr#Sudo()
     let l:password = inputsecret('password: ')
     normal! :<ESC>
@@ -116,6 +129,12 @@ function! nibblrjr#Sudo()
     else
         echo 'nibblrjr: password not changed'
     endif
+endfunction
+
+function! s:GetCommandName()
+    let l:name = getline('.')
+    " strip everything after the first space
+    return substitute(l:name, " .*", "", "")
 endfunction
 
 function! s:GetJSON(url)
