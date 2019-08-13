@@ -10,10 +10,6 @@ let s:helpLines = 2
 let s:endpoint = 'http://localhost:8888'
 let s:api = s:endpoint . '/api/'
 
-function! nibblrjr#GetJSON(url)
-    return json_decode(system('curl --silent ' . a:url))
-endfunction
-
 function! nibblrjr#List()
     enew
     put=s:help
@@ -53,7 +49,55 @@ function! nibblrjr#List()
 endfunction
 
 function! nibblrjr#Get()
+    if line('.') > s:helpLines
+        let l:name = getline('.')
+        " strip everything after the first space
+        let l:name = substitute(l:name, " .*", "", "")
 
+        if bufwinnr(l:name) > 0
+            enew
+            silent execute 'file ' . l:name
+        else
+            silent execute 'edit ' . l:name
+            keepjumps normal! ggdG
+        endif
+
+        put = nibblrjr#GetJSON(s:api . 'command/get/' . UrlEncode(l:name)).command
+        keepjumps normal! ggdd
+        let &modified = 0
+        setlocal filetype=javascript
+        setlocal buftype=acwrite
+        setlocal noswapfile
+        autocmd! BufWriteCmd <buffer> call NibblrSet()
+    endif
 endfunction
 
 call nibblrjr#List()
+
+function! nibblrjr#GetJSON(url)
+    return json_decode(system('curl --silent ' . a:url))
+endfunction
+
+function! nibblrjr#UrlEncode(string)
+    let result = ""
+
+    let characters = split(a:string, '.\zs')
+    for character in characters
+        let ascii_code = char2nr(a:character)
+        if character == " "
+            let result = result . "+"
+        elseif (ascii_code >= 48 && ascii_code <= 57) || (ascii_code >= 65 && ascii_code <= 90) || (ascii_code >= 97 && ascii_code <= 122) || (a:character == "-" || a:character == "_" || a:character == "." || a:character == "~")
+            let result = result . character
+        else
+            let i = 0
+            while i < strlen(character)
+                let byte = strpart(character, i, 1)
+                let decimal = char2nr(byte)
+                let result = result . "%" . printf("%02x", decimal)
+                let i += 1
+            endwhile
+        endif
+    endfor
+
+    return result
+endfunction
