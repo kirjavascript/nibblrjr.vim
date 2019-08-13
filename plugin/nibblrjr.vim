@@ -3,7 +3,7 @@ if v:version < 801
     finish
 endif
 
-let s:help="nibblrjr command editor - o:open a:add D:delete
+let s:help="nibblrjr command editor - o:open a:add D:delete l:lock s:star S:sudo
          \\n-----------------------------------------------"
 let s:helpLines = 2
 
@@ -11,10 +11,18 @@ let s:endpoint = 'http://localhost:8888'
 let s:api = s:endpoint . '/api/'
 
 function! nibblrjr#List()
+    let l:url = s:api . 'command/list'
+    let l:list = nibblrjr#GetJSON(l:url)
+    if type(l:list) != v:t_list
+        echom 'nibblrjr: no listing returned from ' . l:url
+        return
+    endif
+
     enew
     put=s:help
     keepjumps normal! ggddG
-    for command in nibblrjr#GetJSON(s:api . 'command/list')
+
+    for command in l:list
         let l:line = command.name . repeat(' ', 44 - len(command.name))
         if has_key(command, 'starred') && command.starred
             let l:line .= '★'
@@ -62,7 +70,7 @@ function! nibblrjr#Get()
             keepjumps normal! ggdG
         endif
 
-        put = nibblrjr#GetJSON(s:api . 'command/get/' . UrlEncode(l:name)).command
+        put = nibblrjr#GetJSON(s:api . 'command/get/' . nibblrjr#UrlEncode(l:name)).command
         keepjumps normal! ggdd
         let &modified = 0
         setlocal filetype=javascript
