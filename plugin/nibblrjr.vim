@@ -5,6 +5,8 @@
 " help
 " check hashweb
 " bump main version - say requirement
+"
+" " NIBBLR = commands that start with -
 
 if v:version < 801
     echoe 'nibblrjr editor requires vim 8.1'
