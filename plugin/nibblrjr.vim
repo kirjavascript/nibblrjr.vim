@@ -5,6 +5,7 @@
 " help
 " check hashweb
 " bump main version - say requirement
+" store list and sort by command name
 "
 " " NIBBLR = commands that start with -
 
@@ -105,6 +106,10 @@ function! nibblrjr#Set()
     else
         let &modified = 0
     endif
+endfunction
+
+function! nibblrjr#Add()
+
 endfunction
 
 function! nibblrjr#Delete()
