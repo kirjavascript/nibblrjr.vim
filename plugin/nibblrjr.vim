@@ -1,9 +1,7 @@
 " s - vsplit
 " ~ / ? / "> not working
 " help
-" check hashweb
 " requires 3.3.0
-" store list and sort by command name
 
 if v:version < 801
     echoe 'nibblrjr editor requires vim 8.1'
@@ -12,11 +10,14 @@ endif
 
 let s:endpoint = get(g:, 'nibblrjrURL', 'http://nibblr.pw')
 let s:password = ''
-let s:help=" nibblrjr command editor - " . s:endpoint ."
-         \\n  o:open a:add D:delete l:lock s:star S:sudo
-         \\n --------------------------------------------"
+let s:help="nibblrjr command editor - " . s:endpoint ."
+         \\n o:open a:add D:delete l:lock s:star S:sudo
+         \\n--------------------------------------------"
 let s:helpLines = 3
 let s:list = []
+
+command NibblrJr call nibblrjr#List()
+" call nibblrjr#List()
 
 function! nibblrjr#List()
     let l:list = s:GetJSON('command/list')
@@ -26,7 +27,7 @@ function! nibblrjr#List()
     endif
     let s:list = l:list
 
-    vnew
+    enew
     put=s:help
     keepjumps normal! ggddG
 
@@ -152,6 +153,28 @@ function! nibblrjr#Lock()
     endif
 endfunction
 
+function! nibblrjr#Star()
+    if line('.') > s:helpLines
+        let l:name = s:GetCommandName()
+        for command in s:list
+            if command.name == l:name
+                let l:config = { 'starred' : s:Toggle(command.starred) }
+                let s:res = s:PostJSON('command/set-config/' . s:UrlEncode(l:name), l:config)
+                if has_key(s:res, 'error')
+                    echo 'nibblrjr: ' . s:res.error
+                else
+                    let command.starred = s:Toggle(command.starred)
+                    setlocal modifiable
+                    put = s:RenderLine(command)
+                    normal! kdd
+                    setlocal nomodifiable
+                endif
+                break
+            endif
+        endfor
+    endif
+endfunction
+
 function! nibblrjr#Sudo()
     let l:password = inputsecret('password: ')
     normal! :<ESC>
@@ -224,7 +247,3 @@ function! s:UrlEncode(string)
 
     return l:result
 endfunction
-
-" call nibblrjr#List()
-
-command NibblrJr call nibblrjr#List()
