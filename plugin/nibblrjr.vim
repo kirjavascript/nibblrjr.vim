@@ -5,6 +5,7 @@
 " help
 " check hashweb
 " bump main version - say requirement
+" store list and sort by command name
 "
 " " NIBBLR = commands that start with -
 
@@ -64,7 +65,7 @@ function! nibblrjr#List()
     noremap <buffer> <silent> o :call nibblrjr#Get()<cr>
     noremap <buffer> <silent> S :call nibblrjr#Sudo()<cr>
     noremap <buffer> <silent> D :call nibblrjr#Delete()<cr>
-    noremap <buffer> <silent> a :call NibblrAdd()<cr>
+    noremap <buffer> <silent> a :call nibblrjr#Add()<cr>
 endfunction
 
 function! nibblrjr#Get()
@@ -105,6 +106,10 @@ function! nibblrjr#Set()
     else
         let &modified = 0
     endif
+endfunction
+
+function! nibblrjr#Add()
+
 endfunction
 
 function! nibblrjr#Delete()
