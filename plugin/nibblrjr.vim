@@ -16,11 +16,11 @@ endif
 
 let s:endpoint = get(g:, 'nibblrjrURL', 'http://nibblr.pw')
 let s:password = ''
-
 let s:help="nibblrjr command editor - " . s:endpoint ."
          \\n  o:open a:add D:delete l:lock s:star S:sudo
          \\n --------------------------------------------"
 let s:helpLines = 3
+let s:list = []
 
 function! nibblrjr#List()
     let l:list = s:GetJSON('command/list')
@@ -28,22 +28,14 @@ function! nibblrjr#List()
         echom 'nibblrjr: no listing returned from ' . s:endpoint
         return
     endif
+    let s:list = l:list
 
     vnew
     put=s:help
     keepjumps normal! ggddG
 
-    for command in l:list
-        let l:line = command.name . repeat(' ', 44 - len(command.name))
-        if has_key(command, 'starred') && command.starred
-            let l:line .= '★'
-        else
-            let l:line .= ' '
-        endif
-        if has_key(command, 'locked') && command.locked
-            let l:line .= ' 🔒'
-        endif
-        put = l:line
+    for command in s:list
+        put = s:RenderLine(command)
     endfor
     keepjumps normal! gg
 
@@ -65,6 +57,8 @@ function! nibblrjr#List()
     noremap <buffer> <silent> o :call nibblrjr#Get()<cr>
     noremap <buffer> <silent> S :call nibblrjr#Sudo()<cr>
     noremap <buffer> <silent> D :call nibblrjr#Delete()<cr>
+    noremap <buffer> <silent> l :call nibblrjr#Lock()<cr>
+    noremap <buffer> <silent> s :call nibblrjr#Star()<cr>
     noremap <buffer> <silent> a :call nibblrjr#Add()<cr>
 endfunction
 
@@ -108,10 +102,6 @@ function! nibblrjr#Set()
     endif
 endfunction
 
-function! nibblrjr#Add()
-
-endfunction
-
 function! nibblrjr#Delete()
     let l:name = s:GetCommandName()
     if line('.') > s:helpLines && confirm('are you sure you want to delete ' . l:name, "&Ok\n&Cancel") == 1
@@ -128,6 +118,9 @@ function! nibblrjr#Delete()
 endfunction
 
 function! nibblrjr#Add()
+    if line('.') < s:helpLines
+        normal! jjj
+    endif
     let l:name = input('new command name: ')
     " hack to clear the input prompt
     normal! :<ESC>
@@ -136,8 +129,28 @@ function! nibblrjr#Add()
         echo 'nibblrjr: ' . s:res.error
     else
         setlocal modifiable
-        put=l:name
+        put = s:RenderLine({ 'name' : l:name})
         setlocal nomodifiable
+    endif
+endfunction
+
+function! nibblrjr#Lock()
+    if line('.') > s:helpLines
+        let l:name = s:GetCommandName()
+        for command in s:list
+            if command.name == l:name
+                let l:config = { 'locked' : command.locked ? v:false : v:true }
+                let s:res = s:PostJSON('command/set-config/' . s:UrlEncode(l:name), l:config)
+                if has_key(s:res, 'error')
+                    echo 'nibblrjr: ' . s:res.error
+                else
+                    command.locked = !command.locked
+                    let l:update = copy(command)
+                    echo s:RenderLine(l:update)
+                endif
+                break
+            endif
+        endfor
     endif
 endfunction
 
@@ -150,6 +163,19 @@ function! nibblrjr#Sudo()
     else
         echo 'nibblrjr: password not changed'
     endif
+endfunction
+
+function! s:RenderLine(command)
+    let l:line = a:command.name . repeat(' ', 44 - len(a:command.name))
+    if has_key(a:command, 'starred') && a:command.starred
+        let l:line .= '★'
+    else
+        let l:line .= ' '
+    endif
+    if has_key(a:command, 'locked') && a:command.locked
+        let l:line .= ' 🔒'
+    endif
+    return l:line
 endfunction
 
 function! s:GetCommandName()
