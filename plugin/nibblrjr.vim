@@ -1,13 +1,9 @@
-" ? / ~ commands
 " s - vsplit
-" support locking/starring
 " ~ / ? / "> not working
 " help
 " check hashweb
-" bump main version - say requirement
+" requires 3.3.0
 " store list and sort by command name
-"
-" " NIBBLR = commands that start with -
 
 if v:version < 801
     echoe 'nibblrjr editor requires vim 8.1'
@@ -16,7 +12,7 @@ endif
 
 let s:endpoint = get(g:, 'nibblrjrURL', 'http://nibblr.pw')
 let s:password = ''
-let s:help="nibblrjr command editor - " . s:endpoint ."
+let s:help=" nibblrjr command editor - " . s:endpoint ."
          \\n  o:open a:add D:delete l:lock s:star S:sudo
          \\n --------------------------------------------"
 let s:helpLines = 3
@@ -139,14 +135,16 @@ function! nibblrjr#Lock()
         let l:name = s:GetCommandName()
         for command in s:list
             if command.name == l:name
-                let l:config = { 'locked' : command.locked ? v:false : v:true }
+                let l:config = { 'locked' : s:Toggle(command.locked) }
                 let s:res = s:PostJSON('command/set-config/' . s:UrlEncode(l:name), l:config)
                 if has_key(s:res, 'error')
                     echo 'nibblrjr: ' . s:res.error
                 else
-                    command.locked = !command.locked
-                    let l:update = copy(command)
-                    echo s:RenderLine(l:update)
+                    let command.locked = s:Toggle(command.locked)
+                    setlocal modifiable
+                    put = s:RenderLine(command)
+                    normal! kdd
+                    setlocal nomodifiable
                 endif
                 break
             endif
@@ -197,6 +195,10 @@ function! s:PostJSON(url, obj)
     let l:exec = 'curl -H "Content-Type: application/json" -s -d @- ' . l:url
     let json = system(l:exec, json_encode(a:obj))
     return json_decode(json)
+endfunction
+
+function s:Toggle(var)
+    return a:var ? v:false : v:true
 endfunction
 
 function! s:UrlEncode(string)
