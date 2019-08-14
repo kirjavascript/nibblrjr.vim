@@ -225,4 +225,6 @@ function! s:UrlEncode(string)
     return l:result
 endfunction
 
-call nibblrjr#List()
+" call nibblrjr#List()
+
+command NibblrJr call nibblrjr#List()
