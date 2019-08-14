@@ -64,7 +64,7 @@ function! nibblrjr#List()
     noremap <buffer> <silent> o :call nibblrjr#Get()<cr>
     noremap <buffer> <silent> S :call nibblrjr#Sudo()<cr>
     noremap <buffer> <silent> D :call nibblrjr#Delete()<cr>
-    noremap <buffer> <silent> a :call NibblrAdd()<cr>
+    noremap <buffer> <silent> a :call nibblrjr#Add()<cr>
 endfunction
 
 function! nibblrjr#Get()
@@ -122,10 +122,24 @@ function! nibblrjr#Delete()
     endif
 endfunction
 
+function! nibblrjr#Add()
+    let l:name = input('new command name: ')
+    " hack to clear the input prompt
+    normal! :<ESC>
+    let s:res = s:PostJSON('command/new/' . s:UrlEncode(l:name), {})
+    if has_key(s:res, 'error')
+        echo 'nibblrjr: ' . s:res.error
+    else
+        setlocal modifiable
+        put=l:name
+        setlocal nomodifiable
+    endif
+endfunction
+
 function! nibblrjr#Sudo()
     let l:password = inputsecret('password: ')
     normal! :<ESC>
-    if len(l:password)
+    if len(l:password) && l:password != s:password
         echo 'nibblrjr: password changed'
         let s:password = l:password
     else
