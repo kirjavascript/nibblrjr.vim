@@ -33,3 +33,11 @@ then type `:PluginInstall`
 ## Run
 
 type `:NibblrJr`
+
+## Config
+
+use a custom endpoint (default is `http://nibblr.pw`)
+
+```vim
+let g:nibblrjrURL = 'https://concrete.party/irc'
+```
