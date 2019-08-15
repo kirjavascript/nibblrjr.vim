@@ -114,65 +114,12 @@ function! nibblrjr#Delete()
     endif
 endfunction
 
-function! nibblrjr#Add()
-    if line('.') < s:helpLines
-        normal! jjj
-    endif
-    let l:name = input('new command name: ')
-    " hack to clear the input prompt
-    normal! :<ESC>
-    let s:res = s:PostJSON('command/new/' . s:UrlEncode(l:name), {})
-    if has_key(s:res, 'error')
-        echo 'nibblrjr: ' . s:res.error
-    else
-        setlocal modifiable
-        put = s:RenderLine({ 'name' : l:name})
-        setlocal nomodifiable
-    endif
-endfunction
-
-function! nibblrjr#Lock()
-    if line('.') > s:helpLines
-        let l:name = s:GetCommandName()
-        for command in s:list
-            if command.name == l:name
-                let l:config = { 'locked' : s:Toggle(command.locked) }
-                let s:res = s:PostJSON('command/set-config/' . s:UrlEncode(l:name), l:config)
-                if has_key(s:res, 'error')
-                    echo 'nibblrjr: ' . s:res.error
-                else
-                    let command.locked = s:Toggle(command.locked)
-                    setlocal modifiable
-                    put = s:RenderLine(command)
-                    normal! kdd
-                    setlocal nomodifiable
-                endif
-                break
-            endif
-        endfor
-    endif
+function! nibblrjr#Star()
+    call s:ToggleSetting('locked')
 endfunction
 
 function! nibblrjr#Star()
-    if line('.') > s:helpLines
-        let l:name = s:GetCommandName()
-        for command in s:list
-            if command.name == l:name
-                let l:config = { 'starred' : s:Toggle(command.starred) }
-                let s:res = s:PostJSON('command/set-config/' . s:UrlEncode(l:name), l:config)
-                if has_key(s:res, 'error')
-                    echo 'nibblrjr: ' . s:res.error
-                else
-                    let command.starred = s:Toggle(command.starred)
-                    setlocal modifiable
-                    put = s:RenderLine(command)
-                    normal! kdd
-                    setlocal nomodifiable
-                endif
-                break
-            endif
-        endfor
-    endif
+    call s:ToggleSetting('starred')
 endfunction
 
 function! nibblrjr#Sudo()
@@ -183,6 +130,28 @@ function! nibblrjr#Sudo()
         let s:password = l:password
     else
         echo 'nibblrjr: password not changed'
+    endif
+endfunction
+
+function! s:ToggleSetting(setting)
+    if line('.') > s:helpLines
+        let l:name = s:GetCommandName()
+        for command in s:list
+            if command.name == l:name
+                let l:config = { 'starred' : s:Flip(command[a:setting]) }
+                let s:res = s:PostJSON('command/set-config/' . s:UrlEncode(l:name), l:config)
+                if has_key(s:res, 'error')
+                    echo 'nibblrjr: ' . s:res.error
+                else
+                    let command[a:setting] = s:Flip(command[a:setting])
+                    setlocal modifiable
+                    put = s:RenderLine(command)
+                    normal! kdd
+                    setlocal nomodifiable
+                endif
+                break
+            endif
+        endfor
     endif
 endfunction
 
@@ -220,7 +189,7 @@ function! s:PostJSON(url, obj)
     return json_decode(json)
 endfunction
 
-function s:Toggle(var)
+function s:Flip(var)
     return a:var ? v:false : v:true
 endfunction
 
