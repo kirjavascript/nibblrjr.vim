@@ -16,7 +16,7 @@ let s:help="nibblrjr command editor - " . s:endpoint ."
 let s:helpLines = 3
 let s:list = []
 
-command NibblrJr call nibblrjr#List()
+command! NibblrJr call nibblrjr#List()
 " call nibblrjr#List()
 
 function! nibblrjr#List()
