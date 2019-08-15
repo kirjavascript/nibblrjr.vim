@@ -3,10 +3,10 @@
 " help
 " requires 3.3.0
 
-if v:version < 801
-    echoe 'nibblrjr editor requires vim 8.1'
-    finish
-endif
+" if v:version < 801
+"     echoe 'nibblrjr editor requires vim 8.1'
+"     finish
+" endif
 
 let s:endpoint = get(g:, 'nibblrjrURL', 'http://nibblr.pw')
 let s:password = ''
