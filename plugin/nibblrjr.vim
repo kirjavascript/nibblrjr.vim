@@ -16,7 +16,6 @@ let s:help="nibblrjr command editor - " . s:endpoint ."
 let s:helpLines = 3
 let s:list = []
 
-command! NibblrJr call nibblrjr#List()
 " call nibblrjr#List()
 
 function! nibblrjr#List()
@@ -216,3 +215,5 @@ function! s:UrlEncode(string)
 
     return l:result
 endfunction
+
+command! NibblrJr call nibblrjr#List()
