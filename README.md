@@ -8,19 +8,7 @@
 
 requires [nibblrjr 3.3.0](https://github.com/kirjavascript/nibblrjr) and **vim8**
 
-## install
-
-### pathogen
-
-    git clone https://github.com/kirjavascript/nibblrjr.vim ~/.vim/bundle/lightline.vim
-
-### vundle
-
-```vim
-Plugin 'kirjavascript/nibblrjr.vim'
-```
-
-then type `:PluginInstall`
+## Install
 
 ### vim-plug
 
@@ -30,7 +18,18 @@ Plug 'kirjavascript/nibblrjr.vim'
 
 then type `:PlugInstall`
 
-## run
+### Vundle
 
-type ```vim
-:NibblrJr```
+```vim
+Plugin 'kirjavascript/nibblrjr.vim'
+```
+
+then type `:PluginInstall`
+
+### Pathogen
+
+    git clone https://github.com/kirjavascript/nibblrjr.vim ~/.vim/bundle/nibblrjr.vim
+
+## Run
+
+type `:NibblrJr`
