@@ -113,7 +113,24 @@ function! nibblrjr#Delete()
     endif
 endfunction
 
-function! nibblrjr#Star()
+function! nibblrjr#Add()
+    if line('.') < s:helpLines
+        normal! jjj
+    endif
+    let l:name = input('new command name: ')
+    " hack to clear the input prompt
+    normal! :<ESC>
+    let s:res = s:PostJSON('command/new/' . s:UrlEncode(l:name), {})
+    if has_key(s:res, 'error')
+        echo 'nibblrjr: ' . s:res.error
+    else
+        setlocal modifiable
+        put = s:RenderLine({ 'name' : l:name})
+        setlocal nomodifiable
+    endif
+endfunction
+
+function! nibblrjr#Lock()
     call s:ToggleSetting('locked')
 endfunction
 
