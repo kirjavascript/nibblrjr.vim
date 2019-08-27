@@ -20,7 +20,7 @@ function! nibblrjr#List()
 
     enew
     put=s:help
-    keepjumps normal! ggddG
+    keepjumps normal! gg"_ddG
 
     for command in s:list
         put = s:RenderLine(command)
@@ -59,7 +59,7 @@ function! nibblrjr#Get()
             silent execute 'file ' . l:name
         else
             silent execute 'edit ' . l:name
-            keepjumps normal! ggdG
+            keepjumps normal! gg"_dG
         endif
 
         let s:res = s:GetJSON('command/get/' . s:UrlEncode(l:name))
@@ -69,7 +69,7 @@ function! nibblrjr#Get()
         else
             put = s:res.command
             %s///e
-            keepjumps normal! ggdd
+            keepjumps normal! gg"_dd
             let &modified = 0
             setlocal filetype=javascript
             setlocal fileformat=unix
@@ -101,7 +101,7 @@ function! nibblrjr#Delete()
             echo 'nibblrjr: ' . s:res.error
         else
             setlocal modifiable
-            normal! dd
+            normal! "_dd
             setlocal nomodifiable
         endif
     endif
