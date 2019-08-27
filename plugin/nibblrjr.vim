@@ -68,7 +68,7 @@ function! nibblrjr#Get()
             echo 'nibblrjr: ' . s:res.error
         else
             put = s:res.command
-            keepjumps %s///g
+            %s///e
             keepjumps normal! ggdd
             let &modified = 0
             setlocal filetype=javascript
