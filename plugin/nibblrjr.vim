@@ -149,7 +149,7 @@ function! s:ToggleSetting(setting)
         let l:name = s:GetCommandName()
         for command in s:list
             if command.name == l:name
-                let l:config = { 'starred' : s:Flip(command[a:setting]) }
+                let l:config = { a:setting : s:Flip(command[a:setting]) }
                 let s:res = s:PostJSON('command/set-config/' . s:UrlEncode(l:name), l:config)
                 if has_key(s:res, 'error')
                     echo 'nibblrjr: ' . s:res.error
