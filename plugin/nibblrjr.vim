@@ -10,8 +10,6 @@ let s:help="nibblrjr command editor - " . s:endpoint ."
 let s:helpLines = 3
 let s:list = []
 
-" call nibblrjr#List()
-
 function! nibblrjr#List()
     let l:list = s:GetJSON('command/list')
     if type(l:list) != v:t_list
@@ -70,9 +68,11 @@ function! nibblrjr#Get()
             echo 'nibblrjr: ' . s:res.error
         else
             put = s:res.command
+            keepjumps %s///g
             keepjumps normal! ggdd
             let &modified = 0
             setlocal filetype=javascript
+            setlocal fileformat=unix
             setlocal buftype=acwrite
             setlocal noswapfile
             autocmd! BufWriteCmd <buffer> call nibblrjr#Set()
