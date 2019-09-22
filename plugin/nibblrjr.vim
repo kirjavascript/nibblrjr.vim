@@ -2,7 +2,8 @@
 " ~ / ? / "> not working
 " help
 
-let s:endpoint = get(g:, 'nibblrjrURL', 'http://nibblr.pw')
+" let s:endpoint = get(g:, 'nibblrjrURL', 'http://nibblr.pw')
+let s:endpoint = get(g:, 'nibblrjrURL', 'http://localhost:8888')
 let s:password = ''
 let s:help="nibblrjr command editor - " . s:endpoint ."
          \\n o:open a:add D:delete l:lock s:star S:sudo
@@ -185,17 +186,23 @@ function! s:GetCommandName()
     return substitute(l:name, " .*", "", "")
 endfunction
 
+function! s:Curl()
+    if len(s:password)
+        let l:creds = shellescape('admin:' . s:password)
+        return 'curl --user ' . l:creds . ' '
+    else
+        return 'curl '
+    endif
+endfunction
+
 function! s:GetJSON(url)
     let l:url = s:endpoint . '/api/' . a:url
-    return json_decode(system('curl --silent ' . l:url))
+    return json_decode(system(s:Curl() . '--silent ' . l:url))
 endfunction
 
 function! s:PostJSON(url, obj)
-    if len(s:password)
-        let a:obj.password = s:password
-    endif
     let l:url = s:endpoint . '/api/' . a:url
-    let l:exec = 'curl -H "Content-Type: application/json" -s -d @- ' . l:url
+    let l:exec = s:Curl() . '-H "Content-Type: application/json" -s -d @- ' . l:url
     let json = system(l:exec, json_encode(a:obj))
     return json_decode(json)
 endfunction

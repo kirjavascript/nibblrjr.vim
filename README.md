@@ -6,7 +6,7 @@
   manipulate your bot commands remotely with vim ^_^
 </p>
 
-requires [nibblrjr 3.3.0](https://github.com/kirjavascript/nibblrjr) and **vim8**
+requires [nibblrjr 3.5.0](https://github.com/kirjavascript/nibblrjr) and **vim8**
 
 ## Install
 
