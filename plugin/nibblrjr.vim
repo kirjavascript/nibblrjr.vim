@@ -188,7 +188,7 @@ endfunction
 
 function! s:Curl()
     if len(s:password)
-        let l:creds = shellescape('admin:' . s:password)
+        let l:creds = shellescape('vim:' . s:password)
         return 'curl --user ' . l:creds . ' '
     else
         return 'curl '
