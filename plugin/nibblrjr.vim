@@ -2,8 +2,7 @@
 " ~ / ? / "> not working
 " help
 
-" let s:endpoint = get(g:, 'nibblrjrURL', 'http://nibblr.pw')
-let s:endpoint = get(g:, 'nibblrjrURL', 'http://localhost:8888')
+let s:endpoint = get(g:, 'nibblrjrURL', 'http://nibblr.pw')
 let s:password = ''
 let s:help="nibblrjr command editor - " . s:endpoint ."
          \\n o:open a:add D:delete l:lock s:star S:sudo
