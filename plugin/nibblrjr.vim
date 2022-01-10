@@ -5,8 +5,8 @@
 let s:endpoint = get(g:, 'nibblrjrURL', 'https://nibblr.pw')
 let s:password = ''
 let s:help="nibblrjr command editor - " . s:endpoint ."
-         \\n o:open a:add D:delete l:lock s:star S:sudo
-         \\n--------------------------------------------"
+         \\n o:open a:add D:delete l:lock s:star e: event S:sudo
+         \\n----------------------------------------------------"
 let s:helpLines = 3
 let s:list = []
 
@@ -47,6 +47,7 @@ function! nibblrjr#List()
     noremap <buffer> <silent> D :call nibblrjr#Delete()<cr>
     noremap <buffer> <silent> l :call nibblrjr#Lock()<cr>
     noremap <buffer> <silent> s :call nibblrjr#Star()<cr>
+    noremap <buffer> <silent> e :call nibblrjr#Event()<cr>
     noremap <buffer> <silent> a :call nibblrjr#Add()<cr>
 endfunction
 
@@ -127,6 +128,10 @@ endfunction
 
 function! nibblrjr#Lock()
     call s:ToggleSetting('locked')
+endfunction
+
+function! nibblrjr#Event()
+    call s:ToggleSetting('event')
 endfunction
 
 function! nibblrjr#Star()
