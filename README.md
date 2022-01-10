@@ -1,7 +1,7 @@
 # nibblrjr.vim
 
 <p align="center">
-  <img width="864" height="549" src="http://kirjava.xyz/nibblrjr.vim.gif">
+  <img width="864" height="549" src="https://kirjava.xyz/nibblrjr.vim.gif">
 
   manipulate your bot commands remotely with vim ^_^
 </p>
