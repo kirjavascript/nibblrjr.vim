@@ -181,6 +181,9 @@ function! s:RenderLine(command)
     if has_key(a:command, 'locked') && a:command.locked
         let l:line .= ' 🔒'
     endif
+    if has_key(a:command, 'event') && a:command.event
+        let l:line .= ' (event)'
+    endif
     return l:line
 endfunction
 
